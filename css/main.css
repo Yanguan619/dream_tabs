@@ -1,9 +1,20 @@
-html, body, p, h1, h2, h3, h4, h5, h6, ul, li {
+html,
+body,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+ul,
+li {
     margin: 0;
     padding: 0;
 }
 
-ul, li {
+ul,
+li {
     list-style: none;
 }
 
@@ -110,7 +121,8 @@ a:hover {
     content: "\e669";
 }
 
-.fx:after, .card_title:after {
+.fx:after,
+.card_title:after {
     display: block;
     content: '';
     clear: both;
@@ -129,6 +141,7 @@ a:hover {
     width: 100%;
     max-width: 1000px;
     margin: 2px auto;
+    padding: 0 20px;
 }
 
 .header_inner .logo {
@@ -181,13 +194,13 @@ a:hover {
 
 .main {
     width: 100%;
-    max-width: 1000px;
+    max-width: 768px;
     margin: 20px auto;
 }
 
 .tab_cards {
     background: #FFFFFF;
-    border: 1px solid #CCCFD0;
+    box-shadow: 0 1px 3px rgba(32, 33, 36, .28);
     border-radius: 10px;
     margin-top: 20px;
 }
@@ -235,7 +248,7 @@ a:hover {
     margin-left: 10px;
 }
 
-.card_title > span.icon {
+.card_title>span.icon {
     margin-right: 5px;
     font-size: 19px;
 }

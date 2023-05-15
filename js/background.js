@@ -13,35 +13,36 @@ document.addEventListener('DOMContentLoaded', async function () {
 })
 
 // 添加上下文菜单
-B.contextMenus.create({title: "打开收纳盒", onclick: openHome})
-B.contextMenus.create({type: "separator"})
-B.contextMenus.create({title: "收纳全部标签", onclick: onTakeAll})
-B.contextMenus.create({title: "收纳其他标签", onclick: onOther}) // 收纳除此标签外的其他标签
-B.contextMenus.create({title: "仅收纳此标签", onclick: onTake})
-B.contextMenus.create({type: "separator"})
-B.contextMenus.create({title: "排除这个网站", onclick: onExcludeHost, type: 'checkbox', checked: false, id: 'excludeHost'})
+B.contextMenus.create({ title: "打开收纳盒", onclick: openHome })
+B.contextMenus.create({ type: "separator" })
+B.contextMenus.create({ title: "收纳全部标签", onclick: onTakeAll })
+B.contextMenus.create({ title: "收纳其他标签", onclick: onOther }) // 收纳除此标签外的其他标签
+B.contextMenus.create({ title: "仅收纳此标签", onclick: onTake })
+B.contextMenus.create({ title: "收纳所有窗口标签", onclick: onTakeAllWindows })
+B.contextMenus.create({ type: "separator" })
+B.contextMenus.create({ title: "排除这个网站", onclick: onExcludeHost, type: 'checkbox', checked: false, id: 'excludeHost' })
 
 let excludeHostArr = []
 B.tabs.onActivated.addListener(function (info) {
     getTab(info.tabId).then(r => {
         let host = getHost(r.url)
         debug('host:', host)
-        B.contextMenus.update('excludeHost', {checked: excludeHostArr.includes(host)})
+        B.contextMenus.update('excludeHost', { checked: excludeHostArr.includes(host) })
     }).catch(err => debug('getTab error:', err))
 })
 
 // 启动时
-setTimeout(() => {
-    openHome()
-    getTabsQuery().then(tabs => tabs.forEach(tab => {
-        // 启动时，如果有新建标签页，将其关闭
-        if (tab.url.indexOf(B.homeUrl) === 0
-            || tab.url.indexOf('chrome://newtab/') === 0 || tab.url.indexOf('edge://newtab/') === 0
-            || tab.url.indexOf('about:newtab') === 0 || tab.url.indexOf('about:home') === 0) {
-            B.tabs.remove(tab.id)
-        }
-    }))
-}, 1000)
+// setTimeout(() => {
+//     openHome()
+//     getTabsQuery().then(tabs => tabs.forEach(tab => {
+//         // 启动时，如果有新建标签页，将其关闭
+//         if (tab.url.indexOf(B.homeUrl) === 0
+//             || tab.url.indexOf('chrome://newtab/') === 0 || tab.url.indexOf('edge://newtab/') === 0
+//             || tab.url.indexOf('about:newtab') === 0 || tab.url.indexOf('about:home') === 0) {
+//             B.tabs.remove(tab.id)
+//         }
+//     }))
+// }, 1000)
 
 function onTakeAll() {
     getTabsQuery().then(tabs => {
@@ -53,7 +54,28 @@ function onTakeAll() {
             if (isExclude(tab.url)) return // 排除链接
             if (arr.includes(tab.url)) return // 排除重复链接
             arr.push(tab.url)
-            list.push({title: tab.title, url: tab.url})
+            list.push({ title: tab.title, url: tab.url })
+        })
+        addTabList(tabList, list)
+        openHome()
+        B.tabs.remove(ids)
+    }).catch(err => {
+        debug('getTabsQuery error:', err)
+    })
+}
+
+
+function onTakeAllWindows() {
+    getAllWindowTabs().then(tabs => {
+        let ids = []
+        let arr = []
+        let list = []
+        tabs.forEach(tab => {
+            ids.push(tab.id)
+            if (isExclude(tab.url)) return // 排除链接
+            if (arr.includes(tab.url)) return // 排除重复链接
+            arr.push(tab.url)
+            list.push({ title: tab.title, url: tab.url })
         })
         addTabList(tabList, list)
         openHome()
@@ -74,7 +96,7 @@ function onOther(_, _tab) {
             if (isExclude(tab.url)) return // 排除链接
             if (arr.includes(tab.url)) return // 排除重复链接
             arr.push(tab.url)
-            list.push({title: tab.title, url: tab.url})
+            list.push({ title: tab.title, url: tab.url })
         })
         addTabList(tabList, list)
         openHome()
@@ -91,10 +113,10 @@ function onTake(_, tab) {
         keys.sort()
         keys.reverse()
         let key = keys[0]
-        tabList[key].tabs && tabList[key].tabs.unshift({title: tab.title, url: tab.url})
+        tabList[key].tabs && tabList[key].tabs.unshift({ title: tab.title, url: tab.url })
         saveStorage(tabList)
     } else {
-        addTabList(tabList, [{title: tab.title, url: tab.url}])
+        addTabList(tabList, [{ title: tab.title, url: tab.url }])
     }
 
     // 打开主页
@@ -106,7 +128,7 @@ function onTake(_, tab) {
         } else {
             tabs.forEach((tab, i) => {
                 if (i === 0) {
-                    B.tabs.update(tab.id, {active: true})
+                    B.tabs.update(tab.id, { active: true })
                     B.tabs.reload(tab.id)
                 } else {
                     B.tabs.remove(tab.id)
@@ -126,7 +148,7 @@ function onExcludeHost(_, tab) {
     } else {
         excludeHostArr.push(host)
     }
-    B.contextMenus.update('excludeHost', {checked: !isInclude})
+    B.contextMenus.update('excludeHost', { checked: !isInclude })
 }
 
 function isExclude(url) {

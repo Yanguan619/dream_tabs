@@ -46,7 +46,7 @@ function sortTabList(tabList) {
 }
 
 function getTitle(value) {
-    return `收纳于 ${getDate(value)} ${getWeek(value)}`
+    return `收纳于 ${getDate(value)}`
 }
 
 function getDate(value) {
@@ -66,7 +66,7 @@ function getWeek(value) {
 
 function saveStorage(tabList) {
     localStorage.setItem('tabList', JSON.stringify(tabList))
-    storageLocalSet({tabList}).catch(err => debug(`save local error: ${err}`)) // 最大可存放 5M
+    storageLocalSet({ tabList }).catch(err => debug(`save local error: ${err}`)) // 最大可存放 5M
     !isDebug && saveStorageSync(tabList) // 限制最多存放 75 K
 }
 
@@ -145,10 +145,24 @@ function openHome() {
 }
 
 function open(url) {
-    B.tabs.create({url})
+    B.tabs.create({ url })
 }
 
-function getTabsQuery(queryInfo) {
+function getTabsQuery() {
+    return new Promise((resolve, reject) => {
+        const queryInfo = { currentWindow: true };
+        if (!isFirefox) {
+            chrome.tabs.query(queryInfo, tabs => {
+                chrome.runtime.lastError ? reject(chrome.runtime.lastError) : resolve(tabs);
+            });
+        } else {
+            browser.tabs.query(queryInfo).then(tabs => resolve(tabs), err => reject(err));
+        }
+    });
+}
+
+
+function getAllWindowTabs(queryInfo) {
     return new Promise((resolve, reject) => {
         queryInfo = queryInfo || {}
         if (!isFirefox) {
@@ -160,6 +174,7 @@ function getTabsQuery(queryInfo) {
         }
     })
 }
+
 
 function getTab(tabId) {
     return new Promise((resolve, reject) => {
